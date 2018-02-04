@@ -1,0 +1,18 @@
+(*  Sample program
+  computes factorial
+*)
+program factorial;
+var zeee,fact,x : integer;
+var ch : char;
+begin
+	fact := 1;
+	read(x);
+	if 1 > 0 then
+		fact := 0
+	else
+		while x >= 0 do
+			fact := x;
+	read(x)
+			
+end.
+ 

@@ -1,0 +1,27 @@
+valeurg fact
+empiler 1
+:=
+valeurg x
+read
+empiler 1
+empiler 0
+comparer-si-sup
+aller-si-faux 0
+valeurg fact
+empiler 0
+:=
+allera 1
+etiq 0
+etiq 2
+valeurd x
+empiler 0
+comparer-si-inf
+aller-si-vrai 3
+valeurg fact
+valeurd x
+:=
+allera 2
+etiq 3
+etiq 1
+valeurg x
+read
