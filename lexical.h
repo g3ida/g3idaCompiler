@@ -3,7 +3,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include "globals.h"
+#include "util.h"
 
 #define MAX_LEN 60
 #define NUM_RESERVED 15

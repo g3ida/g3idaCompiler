@@ -1,4 +1,3 @@
-#include "globals.h"
 #include "util.h"
 #include "lexical.h"
 #include "parse.h"
@@ -9,7 +8,7 @@ FILE* output = NULL;
 #define EMETTRE(...) fprintf(output, __VA_ARGS__)
 
 #define ERROR_MSG(...)  printf("ERROR : error at line %d: ",lineno); \
-                        printf(__VA_ARGS__); Error = TRUE
+                        printf(__VA_ARGS__); errorCount++; Error = TRUE
 
 //this flag is used for aller-si-faux et aller-si-vrai.
 int CONDITION_FLAG = 0;
@@ -36,19 +35,13 @@ static void write_stmt(void);
 static void readln_stmt(void);
 static void writeln_stmt(void);
 
-static void syntaxError(const char * message)
-{ printf("\n>>> ");
-  printf("ERROR : Syntax error at line %d: %s",lineno,message);
-  Error = TRUE;
-}
-
-static void accepter(Symbole exprected)
-{ if (token == exprected) token = analLex();
+static void accepter(Symbole expected)
+{ if (token == expected) token = analLex();
   else {
     ERROR_MSG("unexpected symbol '");
     printSymbole(token,lexeme);
     printf("'. Expected : '");
-    printSymbole(exprected,"");
+    printSymbole(expected,"");
     printf("\n");
   }
 }
@@ -142,8 +135,9 @@ void statement(void)
     case WRITE : write_stmt(); break;
     case READLN : readln_stmt(); break;
     case WRITELN : writeln_stmt(); break;
-    default : syntaxError("unexprected token -> ");
+    default : ERROR_MSG("unexprected token ");
               printSymbole(token,lexeme);
+              printf("\n");
               token = analLex();
               break;
     } /* end case */
@@ -397,7 +391,6 @@ exprType factor(void)
         break;
     default:
         EMETTRE("halte\n");
-        syntaxError("unexprected token -> ");
         ERROR_MSG("unexprected symbol '");
         printSymbole(token,lexeme);
         printf("' \n");
@@ -418,6 +411,14 @@ void parse(void)
 {
   token = analLex();
   program();
-  if (token!=ENDFILE)
-    syntaxError("Code ends before file\n");
+  printf("compilation ended total with %d errors\n", errorCount);
+  if(Error) {
+    #ifdef __linux__
+        system("rm out.txt");
+    #else
+    #ifdef __WIN32
+        system("del /f out.txt");
+    #endif
+    #endif
+  }
 }

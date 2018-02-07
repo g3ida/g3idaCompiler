@@ -4,7 +4,6 @@
 #include "lexical.h"
 #include "util.h"
 #include "parse.h"
-#include "globals.h"
 
 int main(int argc, char* argv[])
 {
@@ -35,8 +34,10 @@ int main(int argc, char* argv[])
     fclose(input);
     fclose(output);
 
-    system("PAUSE");
 
+    #ifdef __WIN32
+        system("PAUSE");
+    #endif
 
     return 0;
 }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 BOOL Error = FALSE;
+int errorCount = 0;
 
 IdField idTable[100];
 int idTableMax = 0;

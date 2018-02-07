@@ -1,6 +1,4 @@
 #include "lexical.h"
-#include "util.h"
-#include "globals.h"
 
 FILE* input = NULL;
 BOOL save = FALSE;
@@ -17,47 +15,47 @@ static struct
 void printSymbole( Symbole token, const char* lexeme )
 {
     switch (token)
-  { case IF: printf("keyword: if\n");break;
-    case THEN: printf("keyword: then\n");break;
-    case ELSE: printf("keyword: else\n");break;
-    case END: printf("keyword: end\n");break;
-    case DO: printf("keyword: do\n");break;
-    case WHILE: printf("keyword: while\n");break;
-    case PROGRAM: printf("keyword: program\n");break;
-    case READ: printf("keyword: read\n");break;
-    case READLN: printf("keyword: readln\n");break;
-    case WRITE: printf("keyword: write\n");break;
-    case WRITELN: printf("keyword: writeln\n");break;
-    case INTEGER: printf("keyword: integer\n");break;
-    case CHAR: printf("keyword: char\n");break;
-    case VAR: printf("keyword: var\n");break;
-    case BEGIN: printf("keyword: begin\n");break;
-    case ASSIGN: printf(":=\n"); break;
-    case LT: printf("<\n"); break;
-    case LTE: printf("<=\n"); break;
-    case GT: printf(">\n"); break;
-    case GTE: printf(">=\n"); break;
-    case NEQ: printf("<>\n"); break;
-    case AND: printf("&&\n"); break;
-    case OR: printf("||\n"); break;
-    case EQ: printf("==\n"); break;
-    case LPAREN: printf("(\n"); break;
-    case RPAREN: printf(")\n"); break;
-    case SEMI: printf(";\n"); break;
-    case PLUS: printf("+\n"); break;
-    case MINUS: printf("-\n"); break;
-    case MULT: printf("*\n"); break;
-    case DIV: printf("/\n"); break;
-    case MOD: printf("%%\n"); break;
-    case ENDFILE: printf("EOF\n"); break;
-    case TWOPTS: printf(":\n"); break;
-    case COMMA: printf(",\n"); break;
-    case POINT : printf(".\n"); break;
-    case NUM: printf("NUM, val= %s\n",lexeme);break;
-    case ID: printf("ID, name= %s\n",lexeme);break;
-    case ERROR: printf("ERROR: %s\n",lexeme);break;
+  { case IF: printf("keyword: if");break;
+    case THEN: printf("keyword: then");break;
+    case ELSE: printf("keyword: else");break;
+    case END: printf("keyword: end");break;
+    case DO: printf("keyword: do");break;
+    case WHILE: printf("keyword: while");break;
+    case PROGRAM: printf("keyword: program");break;
+    case READ: printf("keyword: read");break;
+    case READLN: printf("keyword: readln");break;
+    case WRITE: printf("keyword: write");break;
+    case WRITELN: printf("keyword: writeln");break;
+    case INTEGER: printf("keyword: integer");break;
+    case CHAR: printf("keyword: char");break;
+    case VAR: printf("keyword: var");break;
+    case BEGIN: printf("keyword: begin");break;
+    case ASSIGN: printf(":="); break;
+    case LT: printf("<"); break;
+    case LTE: printf("<="); break;
+    case GT: printf(">"); break;
+    case GTE: printf(">="); break;
+    case NEQ: printf("<>"); break;
+    case AND: printf("&&"); break;
+    case OR: printf("||"); break;
+    case EQ: printf("=="); break;
+    case LPAREN: printf("("); break;
+    case RPAREN: printf(")"); break;
+    case SEMI: printf(";"); break;
+    case PLUS: printf("+"); break;
+    case MINUS: printf("-"); break;
+    case MULT: printf("*"); break;
+    case DIV: printf("/"); break;
+    case MOD: printf("%%"); break;
+    case ENDFILE: printf("EOF"); break;
+    case TWOPTS: printf(":"); break;
+    case COMMA: printf(","); break;
+    case POINT : printf("."); break;
+    case NUM: printf("NUM, val= %s",lexeme);break;
+    case ID: printf("ID, name= %s",lexeme);break;
+    case ERROR: printf("ERROR: %s",lexeme);break;
     default: /* should never happen */
-      printf("Unknown token: %d\n",token);
+      printf("Unknown token: %d",token);
   }
 }
 
@@ -159,7 +157,7 @@ Symbole analLex(void)
             break;
           } else {
             state = DONE;
-            ungetc(c, stdin);
+            ungetc(c, input);
             current = LPAREN;
           }
           break;
@@ -186,7 +184,7 @@ Symbole analLex(void)
            current = ASSIGN;
          else
          { /* backup in the input */
-           ungetc(c, stdin);
+           ungetc(c, input);
            save = FALSE;
            current = TWOPTS;
            state = DONE;
@@ -195,7 +193,7 @@ Symbole analLex(void)
        case INNUM:
          if (!isdigit(c))
          { /* backup in the input */
-           ungetc(c, stdin);
+           ungetc(c, input);
            save = FALSE;
            state = DONE;
            current = NUM;
@@ -212,7 +210,7 @@ Symbole analLex(void)
           }
           else
           {
-            ungetc(c, stdin);
+            ungetc(c, input);
             state = DONE;
             current = LT;
           }
@@ -224,7 +222,7 @@ Symbole analLex(void)
             current = GTE;
           }
           else
-          { ungetc(c, stdin);
+          { ungetc(c, input);
             state = DONE;
             current = GT;
           }
@@ -235,7 +233,7 @@ Symbole analLex(void)
             state = DONE;
             current = AND;
           } else {
-            ungetc(c, stdin);
+            ungetc(c, input);
             state = DONE;
            current = ERROR;
           }
@@ -246,7 +244,7 @@ Symbole analLex(void)
             state = DONE;
             current = OR;
           } else {
-            ungetc(c, stdin);
+            ungetc(c, input);
             state = DONE;
            current = ERROR;
           }
@@ -257,7 +255,7 @@ Symbole analLex(void)
             state = DONE;
             current = EQ;
           } else {
-            ungetc(c, stdin);
+            ungetc(c, input);
             state = DONE;
            current = ERROR;
           }
@@ -266,7 +264,7 @@ Symbole analLex(void)
        case INID:
          if (!isalpha(c) && !isdigit(c))
          { /* backup in the input */
-           ungetc(c, stdin);
+           ungetc(c, input);
            save = FALSE;
            state = DONE;
            current = ID;
@@ -288,6 +286,5 @@ Symbole analLex(void)
          current = unilexId(lexeme);
      }
    }
-    //printSymbole(current,lexeme);
    return current;
 }
