@@ -3,10 +3,8 @@
 #include "globals.h"
 
 FILE* input = NULL;
-
 BOOL save = FALSE;
-
-char tokenString[MAX_LEN];
+char lexeme[MAX_LEN];
 
 static struct
     { char* str;
@@ -16,55 +14,24 @@ static struct
       {"do",DO},{"while",WHILE},{"read",READ}, {"readln",READLN}, {"writeln",WRITELN},
 {"write",WRITE}, {"begin",BEGIN}, {"program",PROGRAM}};
 
-void printSymbole( Symbole token, const char* tokenString )
+void printSymbole( Symbole token, const char* lexeme )
 {
     switch (token)
-  { case IF:
-      printf("keyword: if\n");
-      break;
-    case THEN:
-      printf("keyword: then\n");
-      break;
-    case ELSE:
-      printf("keyword: else\n");
-      break;
-    case END:
-      printf("keyword: end\n");
-      break;
-    case DO:
-      printf("keyword: do\n");
-      break;
-    case WHILE:
-      printf("keyword: while\n");
-      break;
-    case PROGRAM:
-      printf("keyword: program\n");
-      break;
-    case READ:
-      printf("keyword: read\n");
-      break;
-    case READLN:
-      printf("keyword: readln\n");
-      break;
-    case WRITE:
-      printf("keyword: write\n");
-      break;
-    case WRITELN:
-      printf("keyword: writeln\n");
-      break;
-    case INTEGER:
-      printf("keyword: integer\n");
-      break;
-    case CHAR:
-      printf("keyword: char\n");
-      break;
-    case VAR:
-    printf("keyword: var\n");
-      break;
-    case BEGIN:
-      printf("keyword: begin\n");
-      break;
-
+  { case IF: printf("keyword: if\n");break;
+    case THEN: printf("keyword: then\n");break;
+    case ELSE: printf("keyword: else\n");break;
+    case END: printf("keyword: end\n");break;
+    case DO: printf("keyword: do\n");break;
+    case WHILE: printf("keyword: while\n");break;
+    case PROGRAM: printf("keyword: program\n");break;
+    case READ: printf("keyword: read\n");break;
+    case READLN: printf("keyword: readln\n");break;
+    case WRITE: printf("keyword: write\n");break;
+    case WRITELN: printf("keyword: writeln\n");break;
+    case INTEGER: printf("keyword: integer\n");break;
+    case CHAR: printf("keyword: char\n");break;
+    case VAR: printf("keyword: var\n");break;
+    case BEGIN: printf("keyword: begin\n");break;
     case ASSIGN: printf(":=\n"); break;
     case LT: printf("<\n"); break;
     case LTE: printf("<=\n"); break;
@@ -86,25 +53,15 @@ void printSymbole( Symbole token, const char* tokenString )
     case TWOPTS: printf(":\n"); break;
     case COMMA: printf(",\n"); break;
     case POINT : printf(".\n"); break;
-    case NUM:
-      printf(
-          "NUM, val= %s\n",tokenString);
-      break;
-    case ID:
-      printf(
-          "ID, name= %s\n",tokenString);
-      break;
-    case ERROR:
-      printf(
-          "ERROR: %s\n",tokenString);
-      break;
+    case NUM: printf("NUM, val= %s\n",lexeme);break;
+    case ID: printf("ID, name= %s\n",lexeme);break;
+    case ERROR: printf("ERROR: %s\n",lexeme);break;
     default: /* should never happen */
       printf("Unknown token: %d\n",token);
   }
 }
 
-
-static Symbole reservedLookup (char * s)
+static Symbole unilexId (char * s)
 { int i;
   for (i=0;i<15;i++)
     if (!strcmp(s,reserved[i].str))
@@ -118,29 +75,18 @@ StateType;
 
 int lookback= 0;
 
-void ungetNextChar(int n)
+Symbole analLex(void)
 {
-    lookback = n;
-}
-
-int getNextChar(void)
-{
-    if(lookback != 0) {  int v = lookback; lookback = 0; return v;}
-    return fgetc(input);
-}
-
-Symbole getSymbole(void)
-{
- /* index for storing into tokenString */
-   int tokenStringIndex = 0;
+ /* index for storing into lexeme */
+   int lexemeIndex = 0;
    /* holds current token to be returned */
    Symbole current;
    /* current state - always begins at START */
    StateType state = START;
-   /* flag to indicate save to tokenString */
+   /* flag to indicate save to lexeme */
    int save;
    while (state != DONE)
-   { int c = getNextChar();
+   { int c = fgetc(input);
      save = TRUE;
      switch (state)
      { case START:
@@ -152,7 +98,7 @@ Symbole getSymbole(void)
            state = INASSIGN;
          else if ((c == ' ') || (c == '\t') || (c == '\n')) {
             if(c == '\n') lineno++;
-           save = FALSE;
+            save = FALSE;
          }
          else if (c == '(')
          { save = FALSE;
@@ -182,39 +128,27 @@ Symbole getSymbole(void)
          { state = DONE;
            switch (c)
            { case EOF:
-               save = FALSE;
-               current = ENDFILE;
-               break;
+               save = FALSE; current = ENDFILE; break;
              case '%':
-               current = MOD;
-               break;
+               current = MOD; break;
              case '+':
-               current = PLUS;
-               break;
+               current = PLUS; break;
              case '-':
-               current = MINUS;
-               break;
+               current = MINUS; break;
              case '*':
-               current = MULT;
-               break;
+               current = MULT; break;
              case '/':
-               current = DIV;
-               break;
+               current = DIV; break;
             case ',':
-               current = COMMA;
-               break;
+               current = COMMA; break;
             case '.':
-               current = POINT;
-               break;
+               current = POINT; break;
              case ')':
-               current = RPAREN;
-               break;
+               current = RPAREN; break;
              case ';':
-               current = SEMI;
-               break;
+               current = SEMI; break;
              default:
-               current = ERROR;
-               break;
+               current = ERROR; break;
            }
          }
          break;
@@ -225,7 +159,7 @@ Symbole getSymbole(void)
             break;
           } else {
             state = DONE;
-            ungetNextChar(c);
+            ungetc(c, stdin);
             current = LPAREN;
           }
           break;
@@ -239,7 +173,7 @@ Symbole getSymbole(void)
             lineno++;
          }
          else if (c == '*') {
-            int v = getNextChar();
+            int v = fgetc(input);
             if(v == ')') {
                 state = START;
                 break;
@@ -252,7 +186,7 @@ Symbole getSymbole(void)
            current = ASSIGN;
          else
          { /* backup in the input */
-           ungetNextChar(c);
+           ungetc(c, stdin);
            save = FALSE;
            current = TWOPTS;
            state = DONE;
@@ -261,7 +195,7 @@ Symbole getSymbole(void)
        case INNUM:
          if (!isdigit(c))
          { /* backup in the input */
-           ungetNextChar(c);
+           ungetc(c, stdin);
            save = FALSE;
            state = DONE;
            current = NUM;
@@ -278,9 +212,9 @@ Symbole getSymbole(void)
           }
           else
           {
-            ungetNextChar(c);
+            ungetc(c, stdin);
             state = DONE;
-           current = LT;
+            current = LT;
           }
           break;
 
@@ -290,10 +224,9 @@ Symbole getSymbole(void)
             current = GTE;
           }
           else
-          {
-            ungetNextChar(c);
+          { ungetc(c, stdin);
             state = DONE;
-           current = GT;
+            current = GT;
           }
           break;
 
@@ -302,7 +235,7 @@ Symbole getSymbole(void)
             state = DONE;
             current = AND;
           } else {
-            ungetNextChar(c);
+            ungetc(c, stdin);
             state = DONE;
            current = ERROR;
           }
@@ -313,7 +246,7 @@ Symbole getSymbole(void)
             state = DONE;
             current = OR;
           } else {
-            ungetNextChar(c);
+            ungetc(c, stdin);
             state = DONE;
            current = ERROR;
           }
@@ -324,7 +257,7 @@ Symbole getSymbole(void)
             state = DONE;
             current = EQ;
           } else {
-            ungetNextChar(c);
+            ungetc(c, stdin);
             state = DONE;
            current = ERROR;
           }
@@ -333,7 +266,7 @@ Symbole getSymbole(void)
        case INID:
          if (!isalpha(c) && !isdigit(c))
          { /* backup in the input */
-           ungetNextChar(c);
+           ungetc(c, stdin);
            save = FALSE;
            state = DONE;
            current = ID;
@@ -346,17 +279,15 @@ Symbole getSymbole(void)
          current = ERROR;
          break;
      }
-     if ((save) && (tokenStringIndex <= MAX_LEN)) {
-       tokenString[tokenStringIndex++] = (char) c;
+     if ((save) && (lexemeIndex <= MAX_LEN)) {
+       lexeme[lexemeIndex++] = (char) c;
      }
      if (state == DONE)
-     { tokenString[tokenStringIndex] = '\0';
+     { lexeme[lexemeIndex] = '\0';
        if (current == ID)
-         current = reservedLookup(tokenString);
+         current = unilexId(lexeme);
      }
    }
-
-    //printSymbole(current,tokenString);
-
+    //printSymbole(current,lexeme);
    return current;
 }

@@ -20,7 +20,7 @@ aller-si-vrai 3
 valeurg fact
 valeurd x
 :=
-allera 2
+aller-a 2
 etiq 3
 etiq 1
 valeurg x

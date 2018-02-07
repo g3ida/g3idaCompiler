@@ -6,9 +6,13 @@
 
 FILE* output = NULL;
 
+#define EMETTRE(...) fprintf(output, __VA_ARGS__)
+
+#define ERROR_MSG(...)  printf("ERROR : error at line %d: ",lineno); \
+                        printf(__VA_ARGS__); Error = TRUE
+
 //this flag is used for aller-si-faux et aller-si-vrai.
 int CONDITION_FLAG = 0;
-
 
 static Symbole token; /* holds current token */
 
@@ -38,42 +42,41 @@ static void syntaxError(const char * message)
   Error = TRUE;
 }
 
-static void match(Symbole exprected)
-{ if (token == exprected) token = getSymbole();
+static void accepter(Symbole exprected)
+{ if (token == exprected) token = analLex();
   else {
-    syntaxError("unexprected token -> ");
-    printSymbole(token,tokenString);
-    printf(" >> exprected token: ");
+    ERROR_MSG("unexpected symbol '");
+    printSymbole(token,lexeme);
+    printf("'. Expected : '");
     printSymbole(exprected,"");
-
-    printf("      ");
+    printf("\n");
   }
 }
 
 void program(void)
 {
-    match(PROGRAM);
-    addID(tokenString);
-    match(ID);
-    match(SEMI);
+    accepter(PROGRAM);
+    addID(lexeme);
+    accepter(ID);
+    accepter(SEMI);
     dcl();
     inst_composee();
-    match(POINT);
+    accepter(POINT);
 }
 
 void dcl(void)
 {
     while(token != BEGIN) {
-        match(VAR);
+        accepter(VAR);
         liste_id();
-        match(TWOPTS);
+        accepter(TWOPTS);
         exprType t = type();
         for(int i=1; i< idTableMax; i++) {
             if(idTable[i].type == Void) {
                 idTable[i].type = t;
             }
         }
-        match(SEMI);
+        accepter(SEMI);
     }
 }
 
@@ -82,11 +85,11 @@ exprType type(void)
 {
     switch(token) {
     case INTEGER :
-        match(INTEGER);
+        accepter(INTEGER);
         return Integer;
         break;
     case CHAR :
-        match(CHAR);
+        accepter(CHAR);
         return Char;
         break;
     default:
@@ -97,26 +100,26 @@ exprType type(void)
 
 void liste_id(void)
 {
-    if(addID(tokenString) == idTableMax-1) {
-           printf("ERROR : variable '%s' declared twice\n", tokenString);
+    if(addID(lexeme) == idTableMax-1) {
+           ERROR_MSG("variable '%s' declared twice\n", lexeme);
     }
-    match(ID);
+    accepter(ID);
     while(token == COMMA) {
-        match(COMMA);
-        if(addID(tokenString) == idTableMax-1) {
-           printf("ERROR : variable '%s' declared twice\n", tokenString);
+        accepter(COMMA);
+        if(addID(lexeme) == idTableMax-1) {
+           ERROR_MSG("variable '%s' declared twice\n", lexeme);
         }
-        match(ID);
+        accepter(ID);
     }
 }
 
 void inst_composee(void)
 {
-    match(BEGIN);
+    accepter(BEGIN);
     if(token != END) {
         liste_inst();
     }
-    match(END);
+    accepter(END);
 }
 
 void liste_inst(void)
@@ -124,7 +127,7 @@ void liste_inst(void)
   statement();
   while ((token!=END))
   {
-    match(SEMI);
+    accepter(SEMI);
     statement();
   }
 }
@@ -140,8 +143,8 @@ void statement(void)
     case READLN : readln_stmt(); break;
     case WRITELN : writeln_stmt(); break;
     default : syntaxError("unexprected token -> ");
-              printSymbole(token,tokenString);
-              token = getSymbole();
+              printSymbole(token,lexeme);
+              token = analLex();
               break;
     } /* end case */
 }
@@ -150,44 +153,44 @@ void if_stmt(void)
 {
     int else_etiq = NEXT_ETIQ, end_etiq = NEXT_ETIQ;
     exprType t;
-    match(IF);
+    accepter(IF);
     t = expr();
     if(t != Boolean) {
-        printf("ERROR : at line %d: expected Boolean expression as condition for the if statement\n", lineno);
+        ERROR_MSG("expected Boolean expression as condition for the if statement\n");
     }
     if(CONDITION_FLAG) {
-        fprintf(output,"aller-si-vrai %d\n",else_etiq);
+        EMETTRE("aller-si-vrai %d\n",else_etiq);
     } else {
-        fprintf(output,"aller-si-faux %d\n",else_etiq);
+        EMETTRE("aller-si-faux %d\n",else_etiq);
     }
-    match(THEN);
+    accepter(THEN);
     statement();
-    fprintf(output,"allera %d\n",end_etiq);
-    match(ELSE);
-    fprintf(output,"etiq %d\n",else_etiq);
+    EMETTRE("aller-a %d\n",end_etiq);
+    accepter(ELSE);
+    EMETTRE("etiq %d\n",else_etiq);
     statement();
-    fprintf(output,"etiq %d\n",end_etiq);
+    EMETTRE("etiq %d\n",end_etiq);
 }
 
 void while_stmt(void)
 {
     int loop_etiq = NEXT_ETIQ, end_etiq = NEXT_ETIQ;
-    match(WHILE);
+    accepter(WHILE);
     exprType t;
-    fprintf(output,"etiq %d\n",loop_etiq);
+    EMETTRE("etiq %d\n",loop_etiq);
     t = expr();
     if(t != Boolean) {
-        printf("ERROR : at line %d: expected Boolean expression as condition for the while statement\n", lineno);
+        ERROR_MSG("expected Boolean expression as condition for the while statement\n");
     }
     if(CONDITION_FLAG) {
-        fprintf(output,"aller-si-vrai %d\n",end_etiq);
+        EMETTRE("aller-si-vrai %d\n",end_etiq);
     } else {
-        fprintf(output,"aller-si-faux %d\n",end_etiq);
+        EMETTRE("aller-si-faux %d\n",end_etiq);
     }
-    match(DO);
+    accepter(DO);
     statement();
-    fprintf(output,"allera %d\n",loop_etiq);
-    fprintf(output,"etiq %d\n",end_etiq);
+    EMETTRE("aller-a %d\n",loop_etiq);
+    EMETTRE("etiq %d\n",end_etiq);
 }
 
 void assign_stmt(void)
@@ -195,76 +198,78 @@ void assign_stmt(void)
     exprType trhs, tlhs;
     int tmp;
     if (token==ID)
-        if((tmp = idExists(tokenString)) == -1) {
-            printf("ERROR : variable '%s' undeclared\n", tokenString);
+        if((tmp = idExists(lexeme)) == -1) {
+            ERROR_MSG("variable '%s' undeclared\n", lexeme);
         }
     tlhs = idTable[tmp].type;
-    fprintf(output,"valeurg %s\n",tokenString);
-    match(ID);
-    match(ASSIGN);
+    EMETTRE("valeurg %s\n",lexeme);
+    accepter(ID);
+    accepter(ASSIGN);
     trhs = simple_expr();
     if(tlhs != trhs) {
          if(trhs != TypeError)
-            printf("ERROR : at line %d: type mismatch cannot convert %s to %s\n", lineno, typeToStr(trhs), typeToStr(tlhs));
+            ERROR_MSG("type mismatch cannot convert %s to %s\n", typeToStr(trhs), typeToStr(tlhs));
     }
-    fprintf(output,":=\n");
+    EMETTRE(":=\n");
 }
 
 void read_stmt(void)
 {
-    match(READ);
-    match(LPAREN);
+    accepter(READ);
+    accepter(LPAREN);
     if (token==ID)
-        if(idExists(tokenString) == -1) {
-            printf("ERROR : variable '%s' undeclared\n", tokenString);
+        if(idExists(lexeme) == -1) {
+            ERROR_MSG("variable '%s' undeclared\n", lexeme);
         }
-    fprintf(output,"valeurg %s\n",tokenString);
-    fprintf(output,"read\n");
-    match(ID);
-    match(RPAREN);
+    EMETTRE("valeurg %s\n",lexeme);
+    EMETTRE("read\n");
+    accepter(ID);
+    accepter(RPAREN);
 }
 
 void readln_stmt(void)
 {
-    match(READLN);
-    match(LPAREN);
+    accepter(READLN);
+    accepter(LPAREN);
     if (token==ID)
-        if(idExists(tokenString) == -1) {
-            printf("ERROR : variable '%s' undeclared\n", tokenString);
+        if(idExists(lexeme) == -1) {
+            ERROR_MSG("variable '%s' undeclared\n", lexeme);
+
         }
-    fprintf(output,"valeurg %s\n",tokenString);
-    fprintf(output,"readln\n");
-    match(ID);
-    match(RPAREN);
+    EMETTRE("valeurg %s\n",lexeme);
+    EMETTRE("readln\n");
+    accepter(ID);
+    accepter(RPAREN);
 }
 
 void write_stmt(void)
 {
-    match(WRITE);
-    match(LPAREN);
+    accepter(WRITE);
+    accepter(LPAREN);
     if (token==ID)
-        if(idExists(tokenString) == -1) {
-            printf("ERROR : variable '%s' undeclared\n", tokenString);
+        if(idExists(lexeme) == -1) {
+            ERROR_MSG("variable '%s' undeclared\n", lexeme);
+
         }
-    fprintf(output,"valeurd %s\n",tokenString);
-    fprintf(output,"write\n");
-    match(ID);
-    match(RPAREN);
+    EMETTRE("valeurd %s\n",lexeme);
+    EMETTRE("write\n");
+    accepter(ID);
+    accepter(RPAREN);
 }
 
 void writeln_stmt(void)
 {
-    match(WRITELN);
-    match(LPAREN);
+    accepter(WRITELN);
+    accepter(LPAREN);
     if (token==ID)
-    if(idExists(tokenString) == -1) {
-        printf("ERROR : variable '%s' undeclared\n", tokenString);
+    if(idExists(lexeme) == -1) {
+        ERROR_MSG("variable '%s' undeclared\n", lexeme);
     }
-    fprintf(output,"valeurd %s\n",tokenString);
-    fprintf(output,"writeln\n");
+    EMETTRE("valeurd %s\n",lexeme);
+    EMETTRE("writeln\n");
 
-    match(ID);
-    match(RPAREN);
+    accepter(ID);
+    accepter(RPAREN);
 }
 
 exprType expr(void)
@@ -274,36 +279,37 @@ exprType expr(void)
     tlhs = simple_expr();
     op = token;
     if ((token==LT)||(token==EQ)||(token==NEQ)|| (token==LTE) || (token==GT) || (token==GTE)) {
-        match(token);
+        accepter(token);
         trhs = simple_expr();
         if(trhs != tlhs && tlhs !=TypeError) {
-         printf("ERROR : at line %d: type mismatch cannot convert %s to %s\n", lineno, typeToStr(trhs), typeToStr(tlhs));
+            ERROR_MSG("type misaccepter cannot convert %s to %s\n", typeToStr(trhs), typeToStr(tlhs));
+
          tlhs = TypeError;
         }
 
         switch(op) {
         case LT:
-            fprintf(output,"comparer-si-inf\n");
+            EMETTRE("comparer-si-inf\n");
             CONDITION_FLAG = 0;
             break;
         case GT:
-            fprintf(output,"comparer-si-sup\n");
+            EMETTRE("comparer-si-sup\n");
             CONDITION_FLAG = 0;
             break;
         case EQ:
-            fprintf(output, "comparer-si-egal\n");
+            EMETTRE( "comparer-si-egal\n");
             CONDITION_FLAG = 0;
             break;
         case LTE:
-            fprintf(output,"comparer-si-sup\n");
+            EMETTRE("comparer-si-sup\n");
             CONDITION_FLAG = 1;
             break;
         case GTE:
-            fprintf(output,"comparer-si-inf\n");
+            EMETTRE("comparer-si-inf\n");
             CONDITION_FLAG = 1;
             break;
         case NEQ:
-            fprintf(output, "comparer-si-egal\n");
+            EMETTRE( "comparer-si-egal\n");
             CONDITION_FLAG = 1;
             break;
         default:
@@ -317,22 +323,25 @@ exprType expr(void)
 exprType simple_expr(void)
 {
     exprType tlhs, trhs;
+    char* opstr;
     tlhs = term();
     while ((token==PLUS)||(token==MINUS) || (token==OR))
     {
-        fprintf(output,"%s\n", tokenString);
+        opstr = copyString(lexeme);
         if(token == OR) {
         if(tlhs != Boolean && tlhs !=TypeError) {
-            printf("ERROR : at line %d: expected Boolean operand for 'OR' operator (found %s)\n",lineno, typeToStr(tlhs));
+            ERROR_MSG("expected Boolean operand for 'OR' operator (found %s)\n", typeToStr(tlhs));
             tlhs = TypeError;
         }
       }
-      match(token);
+      accepter(token);
       trhs = term();
       if(trhs != tlhs && tlhs !=TypeError) {
-         printf("ERROR : at line %d: type mismatch cannot convert %s to %s\n", lineno, typeToStr(trhs), typeToStr(tlhs));
+         ERROR_MSG("type mismatch cannot convert %s to %s\n", typeToStr(trhs), typeToStr(tlhs));
          tlhs = TypeError;
       }
+      EMETTRE("%s\n", opstr);
+      free(opstr);
     }
     return tlhs;
 }
@@ -340,22 +349,25 @@ exprType simple_expr(void)
 exprType term(void)
 {
     exprType tlhs, trhs;
+    char* opstr;
     tlhs = factor();
     while ((token==MULT)||(token==DIV) || (token == MOD) || (token == AND))
     {
-      fprintf(output,"%s\n", tokenString);
+      opstr = copyString(lexeme);
       if(token == AND) {
         if(tlhs != Boolean && tlhs !=TypeError) {
-            printf("ERROR : at line %d: expected Boolean operand for 'AND' operator (found %s)\n",lineno, typeToStr(tlhs));
+            ERROR_MSG("expected Boolean operand for 'AND' operator (found %s)\n", typeToStr(tlhs));
             tlhs = TypeError;
         }
       }
-      match(token);
+      accepter(token);
       trhs = factor();
       if(trhs != tlhs && tlhs !=TypeError) {
-         printf("ERROR : at line %d: type mismatch cannot convert %s to %s\n", lineno, typeToStr(trhs), typeToStr(tlhs));
+         ERROR_MSG("type mismatch cannot convert %s to %s\n", typeToStr(trhs), typeToStr(tlhs));
          tlhs = TypeError;
       }
+      EMETTRE("%s\n", opstr);
+      free(opstr);
     }
     return tlhs;
 }
@@ -366,28 +378,31 @@ exprType factor(void)
     int p;
     switch (token) {
     case NUM :
-        fprintf(output,"empiler %d\n", atoi(tokenString));
-        match(NUM);
+        EMETTRE("empiler %d\n", atoi(lexeme));
+        accepter(NUM);
         t = Integer;
         break;
     case ID :
-        fprintf(output,"valeurd %s\n",tokenString);
-        if((p = idExists(tokenString)) == -1) {
-            printf("ERROR : variable '%s' undeclared\n", tokenString);
+        EMETTRE("valeurd %s\n",lexeme);
+        if((p = idExists(lexeme)) == -1) {
+            ERROR_MSG("variable '%s' undeclared\n", lexeme);
         }
         t = idTable[p].type;
-        match(ID);
+        accepter(ID);
       break;
     case LPAREN :
-        match(LPAREN);
+        accepter(LPAREN);
         t = simple_expr();
-        match(RPAREN);
+        accepter(RPAREN);
         break;
     default:
-        fprintf(output,"halte\n");
+        EMETTRE("halte\n");
         syntaxError("unexprected token -> ");
-        printSymbole(token,tokenString);
-        token = getSymbole();
+        ERROR_MSG("unexprected symbol '");
+        printSymbole(token,lexeme);
+        printf("' \n");
+        printSymbole(token,lexeme);
+        token = analLex();
         break;
     }
     return t;
@@ -401,7 +416,7 @@ exprType factor(void)
  */
 void parse(void)
 {
-  token = getSymbole();
+  token = analLex();
   program();
   if (token!=ENDFILE)
     syntaxError("Code ends before file\n");
