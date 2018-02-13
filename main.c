@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
     output = fopen("out.txt", "w");
 
     parse();
-
-    for(int i=1; i<idTableMax; ++i) {
+    int i;
+    for(i=1; i<idTableMax; ++i) {
         if(!idTable[i].used)
         printf("WARNING : variable '%s' declared but not used\n", idTable[i].id);
     }
@@ -32,7 +32,6 @@ int main(int argc, char* argv[])
     }
 */
     fclose(input);
-    fclose(output);
 
 
     #ifdef __WIN32

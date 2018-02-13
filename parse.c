@@ -35,6 +35,7 @@ static void write_stmt(void);
 static void readln_stmt(void);
 static void writeln_stmt(void);
 
+
 static void accepter(Symbole expected)
 { if (token == expected) token = analLex();
   else {
@@ -59,7 +60,7 @@ void program(void)
 
 void dcl(void)
 {
-    while(token != BEGIN) {
+    while(token == VAR) {
         accepter(VAR);
         liste_id();
         accepter(TWOPTS);
@@ -72,7 +73,6 @@ void dcl(void)
         accepter(SEMI);
     }
 }
-
 
 exprType type(void)
 {
@@ -109,7 +109,7 @@ void liste_id(void)
 void inst_composee(void)
 {
     accepter(BEGIN);
-    if(token != END) {
+    if(token != END && token != ENDFILE) {
         liste_inst();
     }
     accepter(END);
@@ -118,7 +118,7 @@ void inst_composee(void)
 void liste_inst(void)
 {
   statement();
-  while ((token!=END))
+  while ((token==SEMI))
   {
     accepter(SEMI);
     statement();
@@ -159,10 +159,13 @@ void if_stmt(void)
     }
     accepter(THEN);
     statement();
+    //inst_composee();
+
     EMETTRE("aller-a %d\n",end_etiq);
     accepter(ELSE);
     EMETTRE("etiq %d\n",else_etiq);
     statement();
+    //inst_composee();
     EMETTRE("etiq %d\n",end_etiq);
 }
 
@@ -177,12 +180,13 @@ void while_stmt(void)
         ERROR_MSG("expected Boolean expression as condition for the while statement\n");
     }
     if(CONDITION_FLAG) {
-        EMETTRE("aller-si-vrai %d\n",end_etiq);
-    } else {
         EMETTRE("aller-si-faux %d\n",end_etiq);
+    } else {
+        EMETTRE("aller-si-vrai %d\n",end_etiq);
     }
     accepter(DO);
     statement();
+    //inst_composee();
     EMETTRE("aller-a %d\n",loop_etiq);
     EMETTRE("etiq %d\n",end_etiq);
 }
@@ -384,7 +388,7 @@ exprType factor(void)
         t = idTable[p].type;
         accepter(ID);
       break;
-    case LPAREN :
+    case LPAREN:
         accepter(LPAREN);
         t = simple_expr();
         accepter(RPAREN);
@@ -411,7 +415,8 @@ void parse(void)
 {
   token = analLex();
   program();
-  printf("compilation ended total with %d errors\n", errorCount);
+  printf("compilation ended with %d errors\n", errorCount);
+  fclose(output);
   if(Error) {
     #ifdef __linux__
         system("rm out.txt");
