@@ -1,7 +1,8 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-#include <stdio.h> //for FILE
+/*for FILE*/
+#include <stdio.h>
 
 /* exprType is used for type checking */
 typedef enum {Void,Integer, Char, Boolean, TypeError} exprType;

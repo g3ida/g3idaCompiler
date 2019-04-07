@@ -6,4 +6,4 @@
  */
 void parse(void);
 
-#endif // PARSE
+#endif

@@ -61,7 +61,7 @@ void printSymbole( Symbole token, const char* lexeme )
 
 static Symbole unilexId (char * s)
 { int i;
-  for (i=0;i<15;i++)
+  for (i=0;i<NUM_RESERVED;i++)
     if (!strcmp(s,reserved[i].str))
       return reserved[i].tok;
   return ID;

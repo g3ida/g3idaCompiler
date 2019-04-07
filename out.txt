@@ -1,27 +1,23 @@
-valeurg fact
-empiler 1
-:=
-valeurg x
-read
-empiler 1
-empiler 0
+valeurg a
+readln
+valeurg b
+readln
+valeurd a
+valeurd b
 comparer-si-sup
 aller-si-faux 0
-valeurg fact
-empiler 0
+valeurg c
+valeurd a
+valeurd b
+-
 :=
-allera 1
+aller-a 1
 etiq 0
-etiq 2
-valeurd x
-empiler 0
-comparer-si-inf
-aller-si-vrai 3
-valeurg fact
-valeurd x
+valeurg c
+valeurd b
+valeurd a
+-
 :=
-aller-a 2
-etiq 3
 etiq 1
-valeurg x
-read
+valeurd c
+writeln

@@ -10,7 +10,8 @@ IdField idTable[100];
 int idTableMax = 0;
 
 int idExists(const char* name) {
-    for(int i=0; i< idTableMax; ++i) {
+    int i;
+	for(i=0; i< idTableMax; ++i) {
         if(strcmp(idTable[i].id, name) == 0) {
             idTable[i].used++;
             return i;
@@ -34,7 +35,7 @@ int addID(const char* name)
     return ret;
 }
 
-//the code line
+/*the current line in code (used for error reporing)*/
 int lineno = 1;
 
 const char* typeToStr(exprType type) {

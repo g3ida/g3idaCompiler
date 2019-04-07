@@ -10,7 +10,7 @@ FILE* output = NULL;
 #define ERROR_MSG(...)  printf("ERROR : error at line %d: ",lineno); \
                         printf(__VA_ARGS__); errorCount++; Error = TRUE
 
-//this flag is used for aller-si-faux et aller-si-vrai.
+/*this flag is used for aller-si-faux et aller-si-vrai.*/
 int CONDITION_FLAG = 0;
 
 static Symbole token; /* holds current token */
@@ -61,11 +61,12 @@ void program(void)
 void dcl(void)
 {
     while(token == VAR) {
+		int i;
         accepter(VAR);
         liste_id();
         accepter(TWOPTS);
         exprType t = type();
-        for(int i=1; i< idTableMax; i++) {
+        for(i=1; i< idTableMax; i++) {
             if(idTable[i].type == Void) {
                 idTable[i].type = t;
             }
@@ -159,13 +160,13 @@ void if_stmt(void)
     }
     accepter(THEN);
     statement();
-    //inst_composee();
+    /*inst_composee();*/
 
     EMETTRE("aller-a %d\n",end_etiq);
     accepter(ELSE);
     EMETTRE("etiq %d\n",else_etiq);
     statement();
-    //inst_composee();
+    /*inst_composee();*/
     EMETTRE("etiq %d\n",end_etiq);
 }
 
@@ -186,7 +187,7 @@ void while_stmt(void)
     }
     accepter(DO);
     statement();
-    //inst_composee();
+    /*inst_composee();*/
     EMETTRE("aller-a %d\n",loop_etiq);
     EMETTRE("etiq %d\n",end_etiq);
 }

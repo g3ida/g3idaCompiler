@@ -7,6 +7,7 @@
 
 int main(int argc, char* argv[])
 {
+	int i;
     if(argc <= 1) {
         printf(" g3idaCompiler: fatal error no input files\n");
         return 0;
@@ -21,16 +22,12 @@ int main(int argc, char* argv[])
     output = fopen("out.txt", "w");
 
     parse();
-    int i;
+
     for(i=1; i<idTableMax; ++i) {
         if(!idTable[i].used)
         printf("WARNING : variable '%s' declared but not used\n", idTable[i].id);
     }
-/*
-    for(int i=0; i<idTableMax; ++i) {
-        printf(" '%s' ---- %s\n", idTable[i].id, typeToStr(idTable[i].type));
-    }
-*/
+
     fclose(input);
 
 

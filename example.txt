@@ -1,0 +1,15 @@
+(*  Sample program
+  prints difference between a and b
+*)
+program test;
+var a, b, c : integer;
+begin
+	readln(a);
+	readln(b);
+	if a > b then
+		c := (a-b)
+	else
+		c := (b-a);
+	writeln(c)
+end.
+ 

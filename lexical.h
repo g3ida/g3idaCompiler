@@ -16,4 +16,4 @@ extern char lexeme[MAX_LEN];
 Symbole analLex(void);
 void printSymbole( Symbole token, const char* lexeme );
 
-#endif // LEX
+#endif
